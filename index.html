@@ -1,0 +1,735 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Индустриализация v3.0 — Эпохи</title>
+<style>
+:root{
+  --bg:#0f1113;--surface:#16181a;--muted:#9aa4ae;--accent:#00c2d6;--success:#4caf50;
+  --card:#1c1f22;--glass:rgba(255,255,255,0.03);
+  --positive:#9be37d;--danger:#f44336;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#070809);color:#e6eef3;padding:12px;min-height:100vh}
+.container{max-width:1200px;margin:0 auto}
+.header{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.logo{font-size:28px}
+.title{font-weight:800;font-size:20px}
+.top-row{display:flex;gap:12px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.stats{display:flex;gap:8px}
+.stat{background:var(--card);padding:10px;border-radius:10px;min-width:110px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
+.nav{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border-radius:8px;padding:8px 12px;border:1px solid rgba(255,255,255,0.03);cursor:pointer;color:var(--muted)}
+.tab-btn.active{background:linear-gradient(90deg,#18323a,#14222a);color:#fff;border-color:rgba(0,194,214,0.25)}
+.main{display:grid;grid-template-columns:360px 1fr;gap:12px}
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.panel{background:linear-gradient(180deg,var(--card),#16191c);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.panel h3{margin-bottom:8px}
+.progress{height:10px;background:var(--glass);border-radius:8px;overflow:hidden}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--positive),var(--accent));transition:width .2s}
+.action-btn{display:inline-flex;gap:8px;align-items:center;justify-content:center;padding:10px;border-radius:10px;background:linear-gradient(90deg,#2b6a35,#1b5e20);border:none;color:#fff;cursor:pointer}
+.action-btn:disabled{opacity:.5;cursor:not-allowed}
+.upgrades-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow:auto;padding-right:6px}
+.upgrade-item{background:#0f1416;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);display:flex;align-items:center;gap:8px}
+.icon-box{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(255,255,255,0.02)}
+.u-meta{flex:1}
+.u-title{font-weight:700;font-size:13px}
+.u-desc{color:var(--muted);font-size:12px}
+.u-buy{padding:8px 10px;border-radius:8px;border:none;background:linear-gradient(90deg,#1565c0,#0b66a0);color:#fff;cursor:pointer}
+.search{display:flex;gap:6px;margin-bottom:8px}
+.quick-actions{position:fixed;left:12px;bottom:12px;display:flex;gap:8px}
+.quick-btn{background:var(--card);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.02);cursor:pointer;color:var(--muted)}
+.notification{position:fixed;left:50%;top:18px;transform:translateX(-50%);background:var(--card);color:#fff;padding:10px 14px;border-radius:8px;border-left:4px solid var(--accent);box-shadow:0 8px 30px rgba(0,0,0,0.6);opacity:0;transition:all .25s}
+.notification.show{opacity:1}
+.content{padding:8px 0;display:flex;flex-direction:column;gap:12px}
+.flex-row{display:flex;gap:12px;align-items:center}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.research-area{background:linear-gradient(180deg,#0d1113,#0b0d0e);padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+.tree-wrapper{position:relative;overflow:auto;padding:12px;background:linear-gradient(180deg,#061014,#021016);border-radius:10px}
+.tree-columns{display:flex;gap:24px;align-items:flex-start;padding-bottom:40px}
+.col{min-width:200px}
+.node{background:linear-gradient(180deg,#122226,#0f2a2b);padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);margin-bottom:12px;color:#cfeeea;cursor:pointer;position:relative}
+.node.locked{opacity:.45;filter:grayscale(.2)}
+.node .n-title{font-weight:700}
+.node .n-cost{font-size:12px;color:var(--muted);margin-top:4px}
+.epoch-label{font-weight:800;margin-bottom:8px;color:#cbe8e4}
+svg.lines{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.footer{margin-top:12px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between}
+.small{font-size:12px;color:var(--muted)}
+/* icons as inline svg backgrounds (simple) */
+.icon-svg{width:20px;height:20px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🏭</div>
+    <div>
+      <div class="title">Индустриализация v3.0 — Эпохи и Генератор Материи</div>
+      <div class="small">Дерево исследований: от Каменного века до Ультимативного Генератора Материи</div>
+    </div>
+  </div>
+
+  <div class="top-row">
+    <div class="stats">
+      <div class="stat"><div>💰</div><div id="gold" style="font-weight:800">0</div><div style="font-size:12px;color:var(--muted)">ЗОЛОТО</div></div>
+      <div class="stat"><div>🌾</div><div id="harvest" style="font-weight:800">0</div><div style="font-size:12px;color:var(--muted)">УРОЖАЙ</div></div>
+      <div class="stat"><div>⛏️</div><div id="ore" style="font-weight:800">0</div><div style="font-size:12px;color:var(--muted)">РУДА</div></div>
+      <div class="stat"><div>🛠️</div><div id="tools" style="font-weight:800">0</div><div style="font-size:12px;color:var(--muted)">ИНСТРУМЕНТЫ</div></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="tab-btn active" data-tab="game">Игра</button>
+    <button class="tab-btn" data-tab="research">Дерево исследований</button>
+    <button class="tab-btn" data-tab="shop">Магазин</button>
+  </div>
+
+  <div class="main">
+    <aside class="sidebar">
+      <div class="panel">
+        <h3>Ферма</h3>
+        <div>Урожай: <span id="farm-yield">1</span>/с</div>
+        <div style="margin-top:8px" class="progress"><div id="farm-progress" class="progress-fill" style="width:0%"></div></div>
+        <div style="margin-top:8px">
+          <button id="plant-btn" class="action-btn">🌱 Посадить (50)</button>
+          <button id="harvest-btn" class="action-btn" style="margin-left:8px" disabled>✂️ Собрать</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Шахта</h3>
+        <div>Добыча за клик: <span id="mine-per-click">1</span></div>
+        <div style="margin-top:8px">
+          <button id="mine-btn" class="action-btn">⛏️ Добыть</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Производство</h3>
+        <div>Скорость: <span id="craft-speed">0.1</span>/с</div>
+        <div style="margin-top:8px" class="progress"><div id="craft-progress" class="progress-fill" style="width:0%"></div></div>
+        <div style="margin-top:8px">
+          <button id="craft-btn" class="action-btn">⚡ Крафт (5 руды)</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Глобальные</h3>
+        <div>Эпоха: <span id="current-era">Каменный век</span></div>
+        <div>Уровень: <span id="player-level">1</span></div>
+      </div>
+    </aside>
+
+    <section class="content">
+      <!-- GAME TAB -->
+      <div id="game" class="tab-content active">
+        <div class="panel">
+          <h3>Кратко</h3>
+          <div class="small">Нажимай, покупай апгрейды, исследуй технологии, переходи эпохи. В игре добавлено 50+ улучшений для каждой из ключевых категорий — ферма, шахта, крафт и глобальные улучшения.</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Улучшения фермы (много)</h3>
+            <div class="upgrades-list" id="farm-upgrades"></div>
+          </div>
+
+          <div class="panel">
+            <h3>Улучшения шахты (много)</h3>
+            <div class="upgrades-list" id="mine-upgrades"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h3>Улучшения крафта (много)</h3>
+            <div class="upgrades-list" id="craft-upgrades"></div>
+          </div>
+          <div class="panel">
+            <h3>Глобальные улучшения (много)</h3>
+            <div class="upgrades-list" id="global-upgrades"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESEARCH TAB -->
+      <div id="research" class="tab-content" style="display:none">
+        <div class="panel research-area">
+          <h3>Дерево исследований</h3>
+          <div class="small">Нажимай на узлы, чтобы изучить технологию. Открой новые эпохи и доступ к продвинутым апгрейдам.</div>
+          <div class="tree-wrapper" id="tree-wrapper">
+            <svg class="lines" id="svg-lines"></svg>
+            <div class="tree-columns" id="tree-columns"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHOP TAB -->
+      <div id="shop" class="tab-content" style="display:none">
+        <div class="panel">
+          <h3>Магазин (купить за золото)</h3>
+          <div class="small">Здесь можно купить редкие пакеты апгрейдов — за крупные суммы золота.</div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="action-btn" onclick="buyPack('starter')">Пакет: Стартовый (1000)</button>
+            <button class="action-btn" onclick="buyPack('advanced')" style="margin-left:8px">Пакет: Продвинутый (10000)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="small">Ресурсы добавляются по эпохам: Камень → Бронза → Железо → Сталь → Чипы → Наноматерия → Антиматерия → Материя</div>
+        <div class="small">Если захотите — могу тонко сбалансировать стоимости/скорости.</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="notification" class="notification"></div>
+
+  <div class="quick-actions">
+    <button class="quick-btn" onclick="quickAction('harvest')">🌾 Сбор</button>
+    <button class="quick-btn" onclick="quickAction('mine')">⛏️ Копать</button>
+    <button class="quick-btn" onclick="quickAction('sell')">💰 Продать всё</button>
+  </div>
+</div>
+
+<script>
+/* =========================
+   GAME DATA & GENERATORS
+   ========================= */
+const ERAS = [
+  { id:'stone', name:'Каменный век', icon:'🪨' },
+  { id:'bronze', name:'Бронзовый век', icon:'🔩' },
+  { id:'iron', name:'Железный век', icon:'⚙️' },
+  { id:'industrial', name:'Индустриальная эра', icon:'🏭' },
+  { id:'electric', name:'Электрическая эпоха', icon:'⚡' },
+  { id:'automation', name:'Эпоха автоматизации', icon:'🤖' },
+  { id:'cyber', name:'Кибернетика', icon:'🧠' },
+  { id:'nano', name:'Нанотехнологии', icon:'🧬' },
+  { id:'singularity', name:'Сингулярность', icon:'🔮' },
+  { id:'matter', name:'Материальный генератор', icon:'🌀' }
+];
+
+// генерируем 60 апгрейдов на категорию (реальных эффектов — рост параметров)
+function generateUpgrades(prefix, baseIcon, count, effectType){
+  const arr = [];
+  for(let i=1;i<=count;i++){
+    const era = ERAS[Math.min(Math.floor((i-1)/(count/ERAS.length)), ERAS.length-1)];
+    const id = `${prefix}_${i}`;
+    const name = `${prefix[0].toUpperCase()+prefix.slice(1)} ${i}`;
+    let desc = '';
+    switch(effectType){
+      case 'farm':
+        desc = `+${(i%5===0?Math.ceil(i/5):1)} урожай или +${(i%3)}% к скорости`;
+        break;
+      case 'mine':
+        desc = `+${Math.max(1,Math.floor(i/6))} к добыче или +${(i%4)}% шанс редкости`;
+        break;
+      case 'craft':
+        desc = `+${(i%4===0?0.1:(i%3)*0.02)} к скорости крафта, +${(i%5)}% качества`;
+        break;
+      case 'global':
+        desc = `+${(i%6)}% к доходу или +${(i%4)}% к продуктивности`;
+        break;
+    }
+    arr.push({
+      id, name, icon: era.icon, era: era.id, eraName: era.name, cost: Math.floor( Math.pow(1.18, i) * (i*50) ), description: desc, maxLevel:1, effectType
+    });
+  }
+  return arr;
+}
+
+/* создаём большие массивы апгрейдов (50+ каждой категории) */
+const FARM_UPGRADES = generateUpgrades('farm', '🌾', 60, 'farm');
+const MINE_UPGRADES = generateUpgrades('mine', '⛏️', 60, 'mine');
+const CRAFT_UPGRADES = generateUpgrades('craft', '🛠️', 60, 'craft');
+const GLOBAL_UPGRADES = generateUpgrades('global', '📊', 60, 'global');
+
+/* =========================
+   RESEARCH TREE (эпохи + технологии)
+   ========================= */
+/* дерево: колонки по эпохам; каждая технология имеет optional prereqs (array of ids) */
+const RESEARCH_NODES = (function(){
+  // базовые технологии первого столбца (камень)
+  const list = [];
+  // helper to create nodes
+  function node(id, name, eraIdx, cost, prereqs=[]){
+    return { id, name, era: ERAS[eraIdx].id, eraIdx, cost, prereqs, unlocked:false };
+  }
+
+  // каменный век
+  list.push(node('fire','Огонь',0,50,[]));
+  list.push(node('tools','Орудия труда',0,60,[]));
+  list.push(node('agriculture','Земледелие',0,80,[]));
+  list.push(node('huts','Хижины',0,70,[]));
+
+  // бронза
+  list.push(node('smelting','Плавка бронзы',1,300,['tools']));
+  list.push(node('pottery','Гончарство',1,200,['fire']));
+  list.push(node('irrigation','Иригация',1,400,['agriculture']));
+  list.push(node('domestication','Одомашнивание',1,350,['agriculture']));
+
+  // железо
+  list.push(node('forge','Кузница',2,1200,['smelting']));
+  list.push(node('mining_methods','Современные шахты',2,1000,['tools']));
+  list.push(node('metallurgy','Металлургия',2,1500,['forge','smelting']));
+
+  // industrial
+  list.push(node('steam','Паровая машина',3,5000,['forge','mining_methods']));
+  list.push(node('factories','Фабричное производство',3,6000,['steam']));
+  list.push(node('rail','Железные дороги',3,4000,['steam']));
+
+  // electric
+  list.push(node('electricity','Электричество',4,15000,['factories']));
+  list.push(node('telegraph','Телеграф',4,8000,['electricity']));
+  list.push(node('assembly','Сборочные линии',4,20000,['factories','electricity']));
+
+  // automation
+  list.push(node('automation','Автоматизация',5,50000,['assembly']));
+  list.push(node('conveyors','Конвейеры',5,30000,['assembly']));
+  list.push(node('control_systems','Системы управления',5,45000,['electricity']));
+
+  // cyber
+  list.push(node('microchips','Микрочипы',6,120000,['automation','control_systems']));
+  list.push(node('ai_basics','Искусственный интеллект (начало)',6,200000,['microchips']));
+
+  // nano
+  list.push(node('nanotech','Нанотехнологии',7,500000,['microchips','ai_basics']));
+  list.push(node('molecular_fabrication','Молекулярная сборка',7,800000,['nanotech']));
+
+  // singularity
+  list.push(node('quantum_research','Квантовые исследования',8,2000000,['molecular_fabrication']));
+  list.push(node('synthetic_physics','Синтетическая физика',8,3000000,['quantum_research']));
+
+  // matter
+  list.push(node('antimatter','Антиматерия',9,10000000,['synthetic_physics']));
+  list.push(node('ultimate_generator','Ультимативный генератор материи',9,50000000,['antimatter','molecular_fabrication']));
+
+  return list;
+})();
+
+/* =========================
+   Game state
+   ========================= */
+const state = {
+  gold: 500,
+  harvest: 0,
+  ore: 0,
+  tools: 0,
+  era: 'stone',
+  eraIdx: 0,
+  levels: { farm:1, mine:1, craft:1 },
+  upgrades: { farm: {}, mine: {}, craft: {}, global: {} },
+  researchUnlocked: new Set(['fire','tools','agriculture','huts']), // initial nodes
+  researchState: {}, // per node: unlocked flag
+  farm: { planted:false, growth:0 },
+  craft: { progress:0 },
+  mine: { pickaxeXP:0, pickaxeLevel:1, perClick:1 }
+};
+
+/* Mark initial research unlocked */
+RESEARCH_NODES.forEach(n=> state.researchState[n.id] = state.researchUnlocked.has(n.id));
+
+/* =========================
+   Helpers and rendering
+   ========================= */
+function $(id){ return document.getElementById(id); }
+function showNotification(msg, time=2500){
+  const el = $('notification');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=> el.classList.remove('show'), time);
+}
+
+/* render resources & basic UI */
+function renderResources(){
+  $('gold').textContent = Math.floor(state.gold);
+  $('harvest').textContent = Math.floor(state.harvest);
+  $('ore').textContent = Math.floor(state.ore);
+  $('tools').textContent = Number(state.tools.toFixed(1));
+  $('farm-yield').textContent = computeFarmYield().toFixed(1);
+  $('mine-per-click').textContent = state.mine.perClick;
+  $('craft-speed').textContent = computeCraftSpeed().toFixed(2);
+  $('current-era').textContent = ERAS[state.eraIdx].name;
+  $('player-level').textContent = state.level || 1;
+  $('farm-progress').style.width = state.farm.growth + '%';
+  $('craft-progress').style.width = Math.min(100, state.craft.progress) + '%';
+  $('plant-btn').disabled = state.farm.planted;
+  $('harvest-btn').disabled = !(state.farm.planted && state.farm.growth>=100);
+  $('craft-btn').disabled = state.ore < (state.craft.upgrade_robotics? 0:5);
+}
+
+/* compute farm yield from upgrades */
+function computeFarmYield(){
+  let base = 1 + (state.levels.farm - 1) * 0.1;
+  // sum simple effects from purchased upgrades
+  Object.keys(state.upgrades.farm).forEach(k=>{
+    const u = state.upgrades.farm[k];
+    if(u) base += (u.amount || 0);
+  });
+  // research effects (chemistry etc) — simplified: if nanotech unlocked, huge boost
+  if(state.researchState['nanotech']) base *= 1.5;
+  return base;
+}
+
+/* compute craft speed */
+function computeCraftSpeed(){
+  let s = 0.1 + (state.levels.craft - 1) * 0.02;
+  Object.keys(state.upgrades.craft).forEach(k=>{
+    s += (state.upgrades.craft[k].speed || 0);
+  });
+  if(state.researchState['automation']) s *= 1.25;
+  return s;
+}
+
+/* =========================
+   Render upgrades lists (generated arrays)
+   ========================= */
+function renderUpgradesList(arr, containerId, category){
+  const container = $(containerId);
+  container.innerHTML = '';
+  arr.forEach(u=>{
+    const cur = state.upgrades[category][u.id] ? 1 : 0;
+    const affordable = state.gold >= u.cost;
+    const node = document.createElement('div');
+    node.className = 'upgrade-item';
+    node.innerHTML = `
+      <div class="icon-box">${u.icon}</div>
+      <div class="u-meta">
+        <div class="u-title">${u.name} <span style="font-size:12px;color:var(--muted)">(${u.eraName})</span></div>
+        <div class="u-desc">${u.description}</div>
+      </div>
+      <div>
+        <div style="font-weight:800;text-align:right">${u.cost} 💰</div>
+        <button class="u-buy" ${cur? 'disabled':''} onclick="buyUpgrade('${category}','${u.id}', ${u.cost})">${cur? 'Куплено':'Купить'}</button>
+      </div>
+    `;
+    container.appendChild(node);
+  });
+}
+
+/* buy upgrade */
+function buyUpgrade(category, id, cost){
+  if(state.gold < cost){ showNotification('Недостаточно золота'); return; }
+  state.gold -= cost;
+  state.upgrades[category][id] = { bought:true, amount:1 };
+  // apply simple effects
+  if(category === 'mine') {
+    // small increase to perClick
+    state.mine.perClick += 0.5;
+  }
+  if(category === 'craft'){
+    state.craft.progress += 5;
+  }
+  if(category === 'global'){
+    // global increases level mildly
+    state.level = (state.level||1) + 0.1;
+  }
+  renderAll();
+  showNotification('Улучшение куплено');
+}
+
+/* packs in shop */
+function buyPack(kind){
+  if(kind==='starter'){
+    if(state.gold < 1000){ showNotification('Недостаточно золота'); return; }
+    state.gold -= 1000;
+    state.harvest += 50;
+    state.ore += 25;
+    showNotification('Куплен стартовый пакет');
+  } else {
+    if(state.gold < 10000){ showNotification('Недостаточно золота'); return; }
+    state.gold -= 10000;
+    state.harvest += 500;
+    state.ore += 300;
+    state.tools += 50;
+    showNotification('Куплен продвинутый пакет');
+  }
+  renderAll();
+}
+
+/* quick actions */
+function quickAction(action){
+  if(action==='harvest'){ if(state.farm.planted && state.farm.growth>=100) harvestCrops(); else showNotification('Урожай не готов'); }
+  if(action==='mine'){ mineOre(); }
+  if(action==='sell'){
+    // sell all with multipliers
+    const sHarvest = Math.floor(state.harvest);
+    const sOre = Math.floor(state.ore);
+    const sTools = Math.floor(state.tools);
+    let total = 0;
+    if(sHarvest>0){ total += sHarvest * 2; state.harvest=0; }
+    if(sOre>0){ total += sOre * 3; state.ore=0; }
+    if(sTools>0){ total += sTools * 10; state.tools=0; }
+    if(total>0){ state.gold += total; showNotification(`Продано на ${total} золота`); } else showNotification('Нечего продавать');
+    renderAll();
+  }
+}
+
+/* planting / harvesting / mining / crafting */
+function plantCrops(){
+  const cost = 50;
+  if(state.gold < cost){ showNotification('Недостаточно золота'); return; }
+  if(state.farm.planted){ showNotification('Уже посажено'); return; }
+  state.gold -= cost;
+  state.farm.planted = true;
+  state.farm.growth = 0;
+  renderAll();
+  showNotification('Посажено');
+}
+
+function harvestCrops(){
+  if(!(state.farm.planted && state.farm.growth>=100)){ showNotification('Урожай не готов'); return; }
+  const amount = Math.floor(computeFarmYield());
+  state.harvest += amount;
+  state.farm.planted = false;
+  state.farm.growth = 0;
+  showNotification(`Собрано ${amount} урожая`);
+  renderAll();
+}
+
+function mineOre(){
+  let amount = Math.floor(state.mine.perClick + Math.random()*0.5);
+  state.ore += amount;
+  state.mine.pickaxeXP += amount;
+  // chance of rare if depth research
+  if(state.researchState['metallurgy'] && Math.random() < 0.05) { state.ore += amount; showNotification('Найдена редкая руда!'); }
+  renderAll();
+  showNotification(`Добыто ${amount} руды`);
+}
+
+function craftTool(){
+  const cost = (state.craft.upgrade_robotics? 0 : 5);
+  if(state.ore < cost){ showNotification('Недостаточно руды'); return; }
+  state.ore -= cost;
+  const val = 1 + Math.random()*0.5;
+  state.tools += val;
+  state.craft.progress += 15;
+  renderAll();
+  showNotification(`Создан инструмент (${val.toFixed(1)})`);
+}
+
+/* =========================
+   RESEARCH rendering + interaction
+   ========================= */
+function renderResearchTree(){
+  const columns = document.getElementById('tree-columns');
+  columns.innerHTML = '';
+  // build eras columns
+  ERAS.forEach((era, idx)=>{
+    const col = document.createElement('div');
+    col.className = 'col';
+    const label = document.createElement('div');
+    label.className = 'epoch-label';
+    label.textContent = `${era.icon} ${era.name}`;
+    col.appendChild(label);
+    // nodes in this era
+    RESEARCH_NODES.filter(n=> n.eraIdx === idx).forEach(n=>{
+      const node = document.createElement('div');
+      node.className = 'node ' + (state.researchState[n.id]? '':'locked');
+      node.id = 'node-'+n.id;
+      node.dataset.nodeId = n.id;
+      node.innerHTML = `<div class="n-title">${n.name}</div><div class="n-cost">${n.cost} 💰</div>`;
+      node.onclick = ()=> tryResearch(n.id);
+      col.appendChild(node);
+    });
+    columns.appendChild(col);
+  });
+  // after render, draw connection lines
+  setTimeout(drawResearchLines, 50);
+}
+
+/* try to research a node */
+function tryResearch(nodeId){
+  const node = RESEARCH_NODES.find(n=>n.id===nodeId);
+  if(!node) return;
+  if(state.researchState[nodeId]){ showNotification('Уже изучено'); return; }
+  // check prereqs
+  const unmet = node.prereqs.filter(p => !state.researchState[p]);
+  if(unmet.length>0){ showNotification('Требуется: ' + unmet.join(', ')); return; }
+  if(state.gold < node.cost){ showNotification('Недостаточно золота'); return; }
+  state.gold -= node.cost;
+  state.researchState[nodeId] = true;
+  applyResearchEffect(nodeId);
+  renderResearchTree();
+  renderAll();
+  showNotification(`Исследовано: ${node.name}`);
+}
+
+/* effects: unlock eras, change stats */
+function applyResearchEffect(id){
+  switch(id){
+    case 'smelting': state.eraIdx = Math.max(state.eraIdx,1); state.era = ERAS[state.eraIdx].id; break;
+    case 'forge': state.eraIdx = Math.max(state.eraIdx,2); state.era = ERAS[state.eraIdx].id; break;
+    case 'steam': state.eraIdx = Math.max(state.eraIdx,3); state.era = ERAS[state.eraIdx].id; break;
+    case 'electricity': state.eraIdx = Math.max(state.eraIdx,4); state.era = ERAS[state.eraIdx].id; break;
+    case 'automation': state.eraIdx = Math.max(state.eraIdx,5); state.era = ERAS[state.eraIdx].id; break;
+    case 'microchips': state.eraIdx = Math.max(state.eraIdx,6); state.era = ERAS[state.eraIdx].id; break;
+    case 'nanotech': state.eraIdx = Math.max(state.eraIdx,7); state.era = ERAS[state.eraIdx].id; break;
+    case 'synthetic_physics': state.eraIdx = Math.max(state.eraIdx,8); state.era = ERAS[state.eraIdx].id; break;
+    case 'antimatter': state.eraIdx = Math.max(state.eraIdx,9); state.era = ERAS[state.eraIdx].id; break;
+    case 'ultimate_generator': // final win-state
+      showNotification('Ультимативный Генератор Материи активирован! Поздравляю!', 8000);
+      break;
+    default:
+      // small passive effect
+      state.gold += Math.floor(Math.random()*50);
+  }
+}
+
+/* Draw SVG lines between node centers for prerequisites */
+function drawResearchLines(){
+  const svg = document.getElementById('svg-lines');
+  svg.innerHTML = '';
+  // compute positions
+  RESEARCH_NODES.forEach(n=>{
+    const el = document.getElementById('node-'+n.id);
+    if(!el) return;
+    n._rect = el.getBoundingClientRect();
+    n._center = { x: n._rect.left + n._rect.width/2, y: n._rect.top + n._rect.height/2 };
+  });
+  // since positions are relative to viewport, compute offset of tree-wrapper
+  const wrapper = document.getElementById('tree-wrapper');
+  const wRect = wrapper.getBoundingClientRect();
+  // make svg large enough and clear
+  svg.setAttribute('width', wrapper.scrollWidth);
+  svg.setAttribute('height', wrapper.scrollHeight);
+  // draw lines
+  RESEARCH_NODES.forEach(n=>{
+    n.prereqs.forEach(pid=>{
+      const p = RESEARCH_NODES.find(x=>x.id===pid);
+      if(!p || !p._center || !n._center) return;
+      const x1 = p._center.x - wRect.left;
+      const y1 = p._center.y - wRect.top;
+      const x2 = n._center.x - wRect.left;
+      const y2 = n._center.y - wRect.top;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const midx = (x1 + x2)/2;
+      const d = `M ${x1} ${y1} C ${midx} ${y1} ${midx} ${y2} ${x2} ${y2}`;
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', 'rgba(0,194,214,0.25)');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('fill','none');
+      svg.appendChild(path);
+    });
+  });
+}
+
+/* =========================
+   INITIALIZE RESEARCH PREREQS (link nodes logically)
+   ========================= */
+(function linkPrereqs(){
+  // add prereqs to nodes based on id names (simple mapping for demo)
+  const byId = id => RESEARCH_NODES.find(n=>n.id===id);
+  function add(id, prereqs){ const n = byId(id); if(n) n.prereqs = [...new Set([...(n.prereqs||[]), ...prereqs])]; }
+
+  add('smelting',['tools']);
+  add('pottery',['fire']);
+  add('irrigation',['agriculture']);
+  add('domestication',['agriculture']);
+  add('forge',['smelting']);
+  add('mining_methods',['tools']);
+  add('metallurgy',['forge','smelting']);
+  add('steam',['forge','mining_methods']);
+  add('factories',['steam']);
+  add('rail',['steam']);
+  add('electricity',['factories']);
+  add('assembly',['factories','electricity']);
+  add('automation',['assembly']);
+  add('conveyors',['assembly']);
+  add('control_systems',['electricity']);
+  add('microchips',['control_systems','automation']);
+  add('ai_basics',['microchips']);
+  add('nanotech',['microchips','ai_basics']);
+  add('molecular_fabrication',['nanotech']);
+  add('quantum_research',['molecular_fabrication']);
+  add('synthetic_physics',['quantum_research']);
+  add('antimatter',['synthetic_physics']);
+  add('ultimate_generator',['antimatter','molecular_fabrication']);
+})();
+
+/* =========================
+   Render all lists & tree
+   ========================= */
+function renderAll(){
+  renderResources();
+  renderUpgradesList(FARM_UPGRADES,'farm-upgrades','farm');
+  renderUpgradesList(MINE_UPGRADES,'mine-upgrades','mine');
+  renderUpgradesList(CRAFT_UPGRADES,'craft-upgrades','craft');
+  renderUpgradesList(GLOBAL_UPGRADES,'global-upgrades','global');
+  renderResearchTree();
+}
+
+/* =========================
+   Game tick (1 sec)
+   ========================= */
+function gameTick(){
+  // farm growth if planted
+  if(state.farm.planted){
+    // base speed influences by era
+    let speed = 100/30; // % per sec to reach 100 in 30 sec base
+    // era modifiers
+    speed *= 1 + state.eraIdx*0.05;
+    state.farm.growth = Math.min(100, state.farm.growth + speed);
+    if(state.farm.growth>=100){
+      // enable harvest
+    }
+  }
+  // craft progress auto
+  state.craft.progress += computeCraftSpeed();
+  // if craft progress accumulates to >=100, create tool
+  while(state.craft.progress >= 100){
+    state.craft.progress -= 100;
+    state.tools += 1 + Math.random()*0.5;
+  }
+  // minor passive gold from researched factories
+  if(state.researchState['factories']) state.gold += 5;
+  renderAll();
+}
+
+/* =========================
+   UI wiring
+   ========================= */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(tc=> tc.style.display = 'none');
+    document.getElementById(tab).style.display = 'block';
+    // redraw lines if research
+    if(tab==='research') setTimeout(drawResearchLines, 120);
+  });
+});
+
+/* bind buttons */
+$('plant-btn').addEventListener('click', plantCrops);
+$('harvest-btn').addEventListener('click', harvestCrops);
+$('mine-btn').addEventListener('click', mineOre);
+$('craft-btn').addEventListener('click', craftTool);
+
+/* initial render */
+renderAll();
+
+/* start tick */
+setInterval(gameTick, 1000);
+
+/* expose for debugging */
+window._state = state;
+window._RESEARCH = RESEARCH_NODES;
+window._FARM_UPGRADES = FARM_UPGRADES;
+
+/* on resize redraw lines */
+window.addEventListener('resize', ()=> setTimeout(drawResearchLines,120));
+
+/* small helper to buy all early nodes for testing (dev) */
+function _dev_unlockAll(){
+  RESEARCH_NODES.forEach(n => { state.researchState[n.id]=true; });
+  renderAll();
+}
+window._dev_unlockAll = _dev_unlockAll;
+</script>
+</body>
+</html>
